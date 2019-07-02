@@ -4,8 +4,10 @@ import codecs
 import datetime
 import os.path
 
-user_name = ''
-password = ''
+f = open(".env", "r")
+user_name = f.readline().strip()
+password = f.readline().strip()
+f.close()
 api = 0
 settings_file_path = "login_cache.json"
 
