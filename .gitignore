@@ -1,5 +1,6 @@
 # do not commit login details
 login_cache.json
+.env
 
 # don't track cache
 __pycache__
