@@ -71,7 +71,6 @@ except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
     # Do relogin but use default ua, keys and such
     api = Client(
         user_name, password,
-        device_id=device_id,
         on_login=lambda x: onlogin_callback(x, settings_file_path))
 
 except ClientLoginError as e:
