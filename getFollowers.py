@@ -1,6 +1,26 @@
 import json
 import os.path
 from Login import api
+from badwords import badwords
+
+def jsonParser(dictName,col,badwords):
+    arr = []
+    temp = json.dumps([t[col] for t in dictName])
+    temp = temp.replace("[","")
+    temp = temp.replace("]","")
+    temp = temp.split(", ")
+
+    for i in temp:
+        v = i.replace("\"","")
+        bad = False
+        for x in badwords:
+            if v.lower() == x.lower():
+                bad = True
+                break
+        if bad == False:
+            arr.append(v)
+    return arr
+
 
 try:
     from instagram_private_api import (
@@ -12,33 +32,44 @@ except ImportError:
     from instagram_private_api import (
         Client, __version__ as client_version)
 
-# ---------- Pagination with max_id ----------
-user_id = input("Enter a user ID: ")
-followers = []
+
 rank_token = Client.generate_uuid()
-results = api.user_followers(user_id, rank_token)
-followers.extend(results.get('users', []))
 
-next_max_id = results.get('next_max_id')
-while next_max_id:
-    results = api.user_followers(user_id, rank_token, max_id=next_max_id)
-    followers.extend(results.get('users', []))
-    if len(followers) >= 600:    # get only first 600 or so
-        break
-    next_max_id = results.get('next_max_id')
+#Getting the popular tags based off of search term
+has_more = True
+tsearch = input("Enter tag search term or enter 0 to skip: ")
+limit = int(input("Enter number of tags: "))
+tag_results = []
 
-followers.sort(key=lambda x: x['pk'])
-# print list of user IDs
-print(json.dumps([u['pk'] for u in followers], indent=2))
+while has_more and rank_token and tsearch != 0 and len(tag_results) < 50:
+    results = api.tag_search(tsearch, rank_token, exclude_list=[t['id'] for t in tag_results])
+    tag_results.extend(results.get('results', []))
+    has_more = results.get('has_more')
+    rank_token = results.get('rank_token')
 
-feed = api.feed_tag("pianoschool",rank_token)
-posts = feed['ranked_items']
+tags = jsonParser(tag_results,'name',badwords)
+print(tags)
+confirm = input("Confirm following the above hashtags(Y/n): ")
+if confirm.lower() == "y":
 
-for i in range(len(posts)-1): 
-    print(posts[i]["id"])
-print
-feed = api.feed_tag("pianoschool",rank_token)
-posts = feed['ranked_items']
+    postList = []
+    likeList = []
+    if limit < len(tags):
+        tags = tags[:limit]
+    for tag in (tags):
+        feed = api.feed_tag(tag,rank_token)
+        posts = feed['ranked_items']
+        for i in range(len(posts)-1): 
+            postList.append(posts[i]["id"])
 
-for i in range(len(posts)-1): 
-    print(posts[i]["id"])
+    for post in postList:
+        likeList.append(api.media_likers(post))
+
+    likeList=jsonParser(likeList,'users',badwords)    
+    toFollow = []
+
+    print(type(likeList[0]))
+    # for i in range(0,(len(likeList)-1)):
+    #     print(likeList[i])
+    #     toFollow.append(jsonParser(likeList[i],'pk',badwords))
+    # print(toFollow)
