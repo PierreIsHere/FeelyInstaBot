@@ -54,7 +54,8 @@ try:
         # login new
         api = Client(
             user_name, password,
-            on_login=lambda x: onlogin_callback(x, settings_file_path))
+            on_login=lambda x: onlogin_callback(x, settings_file_path),
+            auto_patch=True)
     else:
         with open(settings_file) as file_data:
             cached_settings = json.load(file_data, object_hook=from_json)
@@ -64,7 +65,8 @@ try:
         # reuse auth settings
         api = Client(
             user_name, password,
-            settings=cached_settings)
+            settings=cached_settings,
+            auto_patch=True)
 
 except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
     print('ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
@@ -84,14 +86,6 @@ except ClientError as e:
 except Exception as e:
     print('Unexpected Exception: {0!s}'.format(e))
     exit(99)
-
-results = api.feed_timeline()
-items = [item for item in results.get('feed_items', [])
-    if item.get('media_or_ad')]
-for item in items:
-    # Manually patch the entity to match the public api as closely as possible, optional
-    # To automatically patch entities, initialise the Client with auto_patch=True
-    ClientCompatPatch.media(item['media_or_ad'])
 
 # Show when login expires
 cookie_expiry = api.cookie_jar.auth_expires
