@@ -2,6 +2,7 @@ import json
 import os.path
 from Login import api
 from badwords import badwords
+from time import sleep
 
 def jsonParser(dictName,col,badwords):
     arr = []
@@ -68,8 +69,14 @@ if confirm.lower() == "y":
     likeList=jsonParser(likeList,'users',badwords)    
     toFollow = []
 
-    print(type(likeList[0]))
-    # for i in range(0,(len(likeList)-1)):
-    #     print(likeList[i])
-    #     toFollow.append(jsonParser(likeList[i],'pk',badwords))
-    # print(toFollow)
+    # print(likeList[1])
+    x=1
+    for i in range(0,(len(likeList)-1)):
+        if "{pk:" in likeList[i]: 
+            x =x+1
+            temp = likeList[i]
+            print(temp[5:])
+            print(str(x)+".  "+likeList[i+1])
+            # sleep(1)
+            api.friendships_create(temp[5:])
+            # tofollow.append(temp[5:])
