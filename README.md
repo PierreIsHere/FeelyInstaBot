@@ -1,2 +1,2 @@
 # FeelyInstaBot
-Small little Instagram bot designed to expand the outreach of a company
+Small Instagram bot designed to expand the outreach of a company
